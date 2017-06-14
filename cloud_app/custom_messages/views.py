@@ -1,8 +1,10 @@
+import boto3
+from botocore import session
+from botocore.client import Config
 import requests
 
-from rest_framework import generics, views
+from rest_framework import generics, views, status
 from rest_framework.response import Response
-from rest_framework import status
 
 from .models import Message
 from .serializers import MessageSerializer
@@ -15,17 +17,36 @@ class MessageListView(generics.ListCreateAPIView):
 
 
 class GalleryView(views.APIView):
+    REGION_NAME = 'ap-south-1'
+    BUCKET_NAME = 'gallery-82164'
+
     def get(self, request, format=None):
-        # TODO:
-        return Response({'detail': 'TODO'})
+        config = Config(signature_version='s3v4', region_name=self.REGION_NAME)
+
+        s3 = boto3.resource('s3', config=config)
+        client = session.create_client('s3', config=config)
+
+        bucket = s3.Bucket(self.BUCKET_NAME)
+
+        response_data = []
+
+        for obj in bucket.objects.all():
+            response_data.append({
+                'key': obj.key,
+                'url': client.generate_presigned_url(
+                    'get_object', Params={'Bucket': bucket.name, 'Key': obj.key}
+                )
+            })
+
+        return Response(response_data)
 
 
 class JsonPlaceholderView(views.APIView):
-    json_placeholder_url = 'https://jsonplaceholder.typicode.com/posts/1/'
+    JSON_PLACEHOLDER_URL = 'https://jsonplaceholder.typicode.com/posts/1/'
 
     def get(self, request, format=None):
         try:
-            response = requests.get(self.json_placeholder_url)
+            response = requests.get(self.JSON_PLACEHOLDER_URL)
             return Response(response.json())
         except Exception as e:
             return Response(
