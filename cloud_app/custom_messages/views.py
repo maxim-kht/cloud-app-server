@@ -1,7 +1,6 @@
 import requests
 
-from rest_framework import generics
-from rest_framework.views import APIView
+from rest_framework import generics, views
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -15,13 +14,13 @@ class MessageListView(generics.ListCreateAPIView):
     permission_classes = ()
 
 
-class GalleryView(APIView):
+class GalleryView(views.APIView):
     def get(self, request, format=None):
         # TODO:
         return Response({'detail': 'TODO'})
 
 
-class JsonPlaceholderView(APIView):
+class JsonPlaceholderView(views.APIView):
     json_placeholder_url = 'https://jsonplaceholder.typicode.com/posts/1/'
 
     def get(self, request, format=None):
