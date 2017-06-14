@@ -24,7 +24,9 @@ class GalleryView(views.APIView):
         config = Config(signature_version='s3v4', region_name=self.REGION_NAME)
 
         s3 = boto3.resource('s3', config=config)
-        client = session.create_client('s3', config=config)
+
+        current_session = session.get_session()
+        client = current_session.create_client('s3', config=config)
 
         bucket = s3.Bucket(self.BUCKET_NAME)
 
@@ -50,6 +52,6 @@ class JsonPlaceholderView(views.APIView):
             return Response(response.json())
         except Exception as e:
             return Response(
-                {'detai': 'failed to fetch placeholder data: {0}'.format(e)},
+                {'detail': 'failed to fetch placeholder data: {0}'.format(e)},
                 status.HTTP_400_BAD_REQUEST
             )
